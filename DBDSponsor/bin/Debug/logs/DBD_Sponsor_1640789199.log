@@ -1,0 +1,130 @@
+Hashrate Pool: 425.4 h/s
+Balance: 12.161 (Aion)
+Vote Weight: 29.322 %
++----------------------------------------------------------------+
+|                          GMiner v2.70                          |
++----------------------------------------------------------------+
+Algorithm:          Equihash 210,9 "AION0PoW"
+DevFee:             2 %
+Stratum server:     
+  host:             eu.aionpool.tech:2222
+  user:             0xa030ba8b2742fa1e41e10a982b91806f279dd6b90b46552144f2dfe1fe48d37e.76561198426585696
+  password:         x
+Power calculator:   on
+Color output:       on
+Watchdog:           on
+API:                off
+Log to file:        off
+Selected devices:   GPU0  
+Intensity:          100   
+Temperature limits: 70/120
+------------------------------------------------------------------
+17:47:00 Nvidia Driver: 471.41
+17:47:00 GPU0: Target Fan temperature changed to 60 C
+17:47:00 Connected to eu.aionpool.tech:2222 [168.119.146.54]
+17:47:00 Subscribed to Stratum Server
+17:47:00 Set Extra Nonce: 74a9
+17:47:01 Authorized on Stratum Server
+17:47:01 New Job: 0001ed12 Diff: 2.047K
+17:47:01 Started Mining on GPU0: GIGABYTE NVIDIA GeForce GTX 1060 3GB [0000:08:00.0]
+17:47:01 New Job: 0001ed12 Diff: 2.047K
+17:47:02 New Job: 0001ed13 Diff: 2.047K
+17:47:03 New Job: 0001ed14 Diff: 2.047K
+17:47:04 New Job: 0001ed15 Diff: 2.047K
+17:47:05 New Job: 0001ed16 Diff: 2.047K
+17:47:06 New Job: 0001ed17 Diff: 2.047K
+17:47:08 New Job: 0001ed18 Diff: 2.047K
+17:47:09 New Job: 0001ed19 Diff: 2.047K
+17:47:10 New Job: 0001ed1a Diff: 2.047K
+17:47:11 New Job: 0001ed1b Diff: 2.047K
+17:47:12 New Job: 0001ed1c Diff: 2.047K
+17:47:13 New Job: 0001ed1d Diff: 2.047K
+17:47:14 New Job: 0001ed1e Diff: 2.047K
+17:47:15 New Job: 0001ed1f Diff: 2.047K
+17:47:16 New Job: 0001ed20 Diff: 2.047K
+17:47:17 New Job: 0001ed21 Diff: 2.047K
+17:47:18 New Job: 0001ed22 Diff: 2.047K
+17:47:19 New Job: 0001ed23 Diff: 2.047K
+17:47:20 New Job: 0001ed24 Diff: 2.047K
+17:47:21 New Job: 0001ed25 Diff: 2.047K
+17:47:22 New Job: 0001ed26 Diff: 2.047K
+17:47:23 New Job: 0001ed27 Diff: 2.047K
+17:47:24 New Job: 0001ed28 Diff: 2.047K
+17:47:24 GPU0: Share #1 verified on CPU, difficulty: 13.72K
+17:47:24 GPU0: Share #1 accepted 105 ms
+17:47:25 New Job: 0001ed29 Diff: 2.047K
+17:47:26 New Job: 0001ed2a Diff: 2.047K
+17:47:27 New Job: 0001ed2b Diff: 2.047K
+17:47:28 New Job: 0001ed2c Diff: 2.047K
+17:47:29 New Job: 0001ed2d Diff: 2.047K
+17:47:30 New Job: 0001ed2e Diff: 2.047K
++---+-----+---------+------+-----+-----------+
+| ID  GPU    Speed   Shares Power Efficiency |
++---+-----+---------+------+-----+-----------+
+|  0  1060 108 Sol/s  1/0/0  60 W 1.80 Sol/W |
++---+-----+---------+------+-----+-----------+
++---+-----+----+-----+----+------+
+| ID  GPU  Temp  Fan  Core  Mem  |
++---+-----+----+-----+----+------+
+|  0  1060   61  28 % 1493  3802 |
++---+-----+----+-----+----+------+
+17:47:31 Pool: eu.aionpool.tech:2222 Shares/Minute: 2.00
+17:47:31 Pool Hashrate: 68 Sol/s Efficiency: 63.21 %
+17:47:31 Uptime: 0d 00:00:30 Electricity: 0.000 kWh
+17:47:31 New Job: 0001ed2f Diff: 2.047K
+17:47:32 New Job: 0001ed30 Diff: 2.047K
+17:47:33 New Job: 0001ed31 Diff: 2.047K
+17:47:34 New Job: 0001ed32 Diff: 2.047K
+17:47:35 New Job: 0001ed33 Diff: 2.047K
+17:47:36 New Job: 0001ed34 Diff: 2.047K
+17:47:37 New Job: 0001ed35 Diff: 2.047K
+17:47:38 New Job: 0001ed36 Diff: 2.047K
+17:47:39 New Job: 0001ed37 Diff: 2.047K
+17:47:40 New Job: 0001ed38 Diff: 2.047K
+Hashrate Pool: 423.3 h/s
+Balance: 12.161 (Aion)
+Vote Weight: 29.187 %
+17:47:41 New Job: 0001ed39 Diff: 2.047K
+17:47:42 New Job: 0001ed3a Diff: 2.047K
+17:47:43 New Job: 0001ed3b Diff: 2.047K
+17:47:44 New Job: 0001ed3c Diff: 2.047K
+17:47:45 New Job: 0001ed3d Diff: 2.047K
+17:47:46 New Job: 0001ed3e Diff: 2.047K
+17:47:47 New Job: 0001ed3f Diff: 2.047K
+17:47:48 New Job: 0001ed40 Diff: 2.047K
+17:47:49 New Job: 0001ed41 Diff: 2.047K
+17:47:50 New Job: 0001ed42 Diff: 2.047K
+17:47:52 New Job: 0001ed43 Diff: 2.047K
+17:47:53 New Job: 0001ed44 Diff: 2.047K
+17:47:54 New Job: 0001ed45 Diff: 2.047K
+17:47:55 New Job: 0001ed46 Diff: 2.047K
+17:47:56 New Job: 0001ed47 Diff: 2.047K
+17:47:57 New Job: 0001ed48 Diff: 2.047K
+17:47:58 New Job: 0001ed49 Diff: 2.047K
+17:47:59 New Job: 0001ed4a Diff: 2.047K
+17:48:00 New Job: 0001ed4b Diff: 2.047K
++---+-----+---------+------+-----+-----------+
+| ID  GPU    Speed   Shares Power Efficiency |
++---+-----+---------+------+-----+-----------+
+|  0  1060 102 Sol/s  1/0/0  60 W 1.70 Sol/W |
++---+-----+---------+------+-----+-----------+
++---+-----+----+-----+----+------+
+| ID  GPU  Temp  Fan  Core  Mem  |
++---+-----+----+-----+----+------+
+|  0  1060   63  35 % 1493  3802 |
++---+-----+----+-----+----+------+
+17:48:01 Pool: eu.aionpool.tech:2222 Shares/Minute: 1.00
+17:48:01 Pool Hashrate: 34 Sol/s Efficiency: 33.46 %
+17:48:01 Uptime: 0d 00:01:00 Electricity: 0.001 kWh
+17:48:01 New Job: 0001ed4c Diff: 2.047K
+17:48:01 New Job: 0001ed4d Diff: 2.047K
+17:48:03 New Job: 0001ed4e Diff: 2.047K
+17:48:04 New Job: 0001ed4f Diff: 2.047K
+17:48:05 New Job: 0001ed50 Diff: 2.047K
+17:48:06 New Job: 0001ed51 Diff: 2.047K
+17:48:07 New Job: 0001ed52 Diff: 2.047K
+17:48:08 New Job: 0001ed53 Diff: 2.047K
+17:48:08 GPU0: Share #2 verified on CPU, difficulty: 11.06K
+17:48:08 GPU0: Share #2 accepted 107 ms
+17:48:08 New Job: 0001ed53 Diff: 2.047K
+17:48:09 New Job: 0001ed54 Diff: 1.535K

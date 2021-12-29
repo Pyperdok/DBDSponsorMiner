@@ -1,0 +1,63 @@
+Hashrate Pool: 163.8 h/s
+Balance: 12.161 (Aion)
+Vote Weight: 24.032 %
++----------------------------------------------------------------+
+|                          GMiner v2.70                          |
++----------------------------------------------------------------+
+Algorithm:          Equihash 210,9 "AION0PoW"
+DevFee:             2 %
+Stratum server:     
+  host:             eu.aionpool.tech:2222
+  user:             0xa030ba8b2742fa1e41e10a982b91806f279dd6b90b46552144f2dfe1fe48d37e.76561198426585696
+  password:         x
+Power calculator:   on
+Color output:       on
+Watchdog:           on
+API:                off
+Log to file:        off
+Selected devices:   GPU0  
+Intensity:          72    
+Temperature limits: 70/120
+------------------------------------------------------------------
+19:03:07 Nvidia Driver: 471.41
+19:03:07 GPU0: Target Fan temperature changed to 60 C
+19:03:07 Connected to eu.aionpool.tech:2222 [168.119.146.54]
+19:03:07 Subscribed to Stratum Server
+19:03:07 Set Extra Nonce: c8a4
+19:03:07 Authorized on Stratum Server
+19:03:07 New Job: 0001f59a Diff: 2.047K
+19:03:07 Started Mining on GPU0: GIGABYTE NVIDIA GeForce GTX 1060 3GB [0000:08:00.0]
+19:03:08 New Job: 0001f59b Diff: 2.047K
+19:03:09 New Job: 0001f59c Diff: 2.047K
+19:03:14 New Job: 0001f59d Diff: 2.047K
+19:03:16 New Job: 0001f59e Diff: 2.047K
+19:03:17 New Job: 0001f59f Diff: 2.047K
+19:03:18 New Job: 0001f5a0 Diff: 2.047K
+19:03:19 New Job: 0001f5a1 Diff: 2.047K
++----------------------------------------------------------------+
+|                          GMiner v2.70                          |
++----------------------------------------------------------------+
+Algorithm:          Equihash 210,9 "AION0PoW"
+DevFee:             2 %
+Stratum server:     
+  host:             eu.aionpool.tech:2222
+  user:             0xa030ba8b2742fa1e41e10a982b91806f279dd6b90b46552144f2dfe1fe48d37e.76561198426585696
+  password:         x
+Power calculator:   on
+Color output:       on
+Watchdog:           on
+API:                off
+Log to file:        off
+Selected devices:   GPU0  
+Intensity:          72    
+Temperature limits: 70/120
+------------------------------------------------------------------
+19:03:23 Nvidia Driver: 471.41
+19:03:23 GPU0: Target Fan temperature changed to 60 C
+19:03:23 Connected to eu.aionpool.tech:2222 [168.119.146.54]
+19:03:23 Subscribed to Stratum Server
+19:03:23 Set Extra Nonce: c8fd
+19:03:23 Authorized on Stratum Server
+19:03:23 New Job: 0001f5a5 Diff: 2.047K
+19:03:23 Started Mining on GPU0: GIGABYTE NVIDIA GeForce GTX 1060 3GB [0000:08:00.0]
+19:03:24 New Job: 0001f5a6 Diff: 2.047K

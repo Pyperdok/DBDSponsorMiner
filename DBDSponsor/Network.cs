@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Net;
 using System.IO;
@@ -11,9 +8,11 @@ namespace DBDSponsor
 {
     class Network
     {
+        public delegate void NetworkErrorHandler(Exception ex);
         static string poolHashrateUrl = "https://api.aionpool.tech/api/pools/AionPool/miners/0xa030ba8b2742fa1e41e10a982b91806f279dd6b90b46552144f2dfe1fe48d37e";
         static string voteWeightUrl = "http://dbd-mix.xyz/stat";
         static string poolBalanceUrl = "https://mainnet-api.theoan.com/aion/dashboard/getAccountDetails?accountAddress=a030ba8b2742fa1e41e10a982b91806f279dd6b90b46552144f2dfe1fe48d37e";
+        public static NetworkErrorHandler NetworkErrorReceived = null;
         public static HttpWebResponse Http(string url)
         {
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
@@ -31,19 +30,19 @@ namespace DBDSponsor
                 Console.WriteLine(body);
                 JsonDocument json = JsonDocument.Parse(body);
                 JsonElement content;
+
                 if(json.RootElement.TryGetProperty("content", out content))
                 {
                     try
                     {
-                        string currency = content[0].GetProperty("balance").GetString();
-                        
+                        string currency = content[0].GetProperty("balance").GetString();                       
                         double balance = float.Parse(currency, NumberStyles.AllowDecimalPoint, NumberFormatInfo.InvariantInfo);
                         balance = Math.Round(balance, 3);
                         return balance.ToString().Replace(",", ".");
                     }
                     catch(Exception ex) 
                     {
-                        Console.WriteLine(ex.Message);
+                        NetworkErrorReceived?.Invoke(ex);
                     }
                 }
 
@@ -57,11 +56,19 @@ namespace DBDSponsor
             HttpWebResponse response = Http(url);
             if (response.StatusCode == HttpStatusCode.OK)
             {
-                string body = new StreamReader(response.GetResponseStream()).ReadToEnd();
-                float voteWeight;
-                if (float.TryParse(body, out voteWeight))
+                try
                 {
-                    return (voteWeight * 100).ToString().Replace(",", ".");
+                    string body = new StreamReader(response.GetResponseStream()).ReadToEnd();
+                    float voteWeight;
+                    if (float.TryParse(body, NumberStyles.Any, NumberFormatInfo.InvariantInfo, out voteWeight))
+                    {
+                        voteWeight = (float)Math.Round(voteWeight, 5);
+                        return (voteWeight * 100).ToString().Replace(",", ".");
+                    }
+                }
+                catch(Exception ex)
+                {
+                    NetworkErrorReceived?.Invoke(ex);
                 }
             }
             return "-";
@@ -86,11 +93,14 @@ namespace DBDSponsor
                             hashrate += el.Value.GetProperty("hashrate").GetSingle();
                         }
                     }
-                    catch { }
+                    catch(Exception ex) 
+                    {
+                        NetworkErrorReceived?.Invoke(ex);
+                    }
                 }                             
             }
-            hashrate = Math.Round(hashrate, 1);
 
+            hashrate = Math.Round(hashrate, 1);
             Console.WriteLine($"Updated Hashrate Pool: {hashrate}");
             return hashrate.ToString().Replace(",",".");
         }
