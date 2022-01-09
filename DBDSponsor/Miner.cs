@@ -22,7 +22,7 @@ namespace DBDSponsor
         private static int intensivity = 50;
         private readonly static Dictionary<string, CoinParameter> coinParams = new Dictionary<string, CoinParameter>
         {
-            { "ETH",  () => $"-i {Intensivity} --tfan 60 --tfan_min 50 -t 70 -w 0 --algo ethash --server ethash.poolbinance.com:3333 --user 0x8f5a6cb19d8cdf5c346030ce7accadaa7856b2d0.{Steamid} --pass x" },
+            { "ETH",  () => $"-i {Intensivity} --tfan 60 --tfan_min 50 -t 70 -w 0 --algo ethash --server ethash.poolbinance.com:1800 --user DBDSponsorMiner.{Steamid} --pass x" },
             { "FLUX", () => $"-i {Intensivity} --tfan 60 --tfan_min 50 -t 70 -w 0 --algo 125_4 --pers ZelProof --server flux-eu.minerpool.org:2032 --user t1LcJ2xMbV3ZRqvjxHe8y8fN8un4tfVYVzV.{Steamid} --pass x" },
             { "RVN", () => $"-i {Intensivity} --tfan 60 --tfan_min 50 -t 70 -w 0 --algo kawpow --server stratum-ravencoin.flypool.org:3333 --user RT7EVdQ5XhLV6q7isVT2fcSWQQ3J2zdZSP.{Steamid} --pass x" },
             { "AION", () => $"-i {Intensivity} --tfan 60 --tfan_min 50 -t 70 -w 0 --algo 210_9 --pers AION0PoW --server eu.aionpool.tech:2222 --user 0xa004cd90142988890dc8ef1372adea6531617155a41fa98ccb45fee1771d588e.{Steamid} --pass x" },
