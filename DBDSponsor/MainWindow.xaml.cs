@@ -5,7 +5,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Threading.Tasks;
-using System.Threading;
 using System.Windows.Input;
 using Drawing = System.Drawing;
 using WinForms = System.Windows.Forms;
@@ -14,28 +13,123 @@ namespace DBDSponsor
 {
     public partial class MainWindow : Window
     {
-        private string path = $"logs/DBD_Sponsor_{DateTimeOffset.Now.ToUnixTimeSeconds()}.log";
-        private WinForms.NotifyIcon notifyIcon = new WinForms.NotifyIcon();
+        public readonly string path = $"logs/DBD_Sponsor_{DateTimeOffset.Now.ToUnixTimeSeconds()}.log";
+        private bool IsUser = false;
+        private bool IsUserRestartMiner = false;
+        private readonly WinForms.NotifyIcon notifyIcon = new WinForms.NotifyIcon()
+        {
+            Visible = true,
+            BalloonTipIcon = WinForms.ToolTipIcon.Info,
+            Icon = new Drawing.Icon("GoldCoin.ico"),
+            Text = "DBD Sponsor v0.3",
+            BalloonTipText = "DBDSponsor is here"
+        };
+
         public MainWindow()
         {
             InitializeComponent();
-            if(IsDuplicate())
+
+            if (IsDuplicate())
             {
                 MessageBox.Show("DBDSponsor is already started. Please don't try to start the duplicate");
                 Environment.Exit(0);
             }
             Directory.CreateDirectory("logs");
 
+            //Events
             Miner.OutputDataReceived += MinerOutputDataReceived;
-            Network.NetworkErrorReceived += NetworkErrorReceived;
+            Miner.Started += MinerStarted;
+            Miner.Exited += MinerExited;
+            Calculator.ProfitCoinUpdated += ProfitCoinUpdated;
+            Stat.ErrorReceived += StatErrorReceived;
+            Stat.Window = this;
             notifyIcon.Click += TrayClick;
-            notifyIcon.Visible = true;
-            notifyIcon.BalloonTipIcon = WinForms.ToolTipIcon.Info;
-            notifyIcon.Icon = new Drawing.Icon("GoldCoin.ico");
-            notifyIcon.Text = "DBD Sponsor v0.2";
-            notifyIcon.BalloonTipText = "DBDSponsor is here";
 
-            UpdateStats();
+            Stat.UpdateStatsAsync();
+            Calculator.UpdateProfitCoinAsync();
+        }
+
+        private void ProfitCoinUpdated(string coin)
+        {
+            if(Miner.ProfitCoin != coin && Miner.IsWorking)
+            {
+                Console.WriteLine("Profit coin has changed. Restarting the miner.");
+                Miner.ProfitCoin = coin; //Restart Miner if profit coin will have changed
+                IsUser = true;
+                Miner.Stop();
+                Miner.Start();
+            }
+            Miner.ProfitCoin = coin;
+            Dispatcher.Invoke(() =>
+            {
+                if (coin != null) {
+                    L_Gpu.Content = "GPU: OK";
+                    L_Coin.Content = $"COIN: {coin}";
+                    L_Gpu.Foreground = Brushes.Lime;
+                    L_Coin.Foreground = Brushes.Lime;
+                }
+                else if(Miner.ProfitCoin == null)
+                {
+                    BT_Start.IsEnabled = false;
+                    L_Gpu.Content = "GPU: INVALID";
+                    L_Coin.Content = "COIN: INVALID";
+                    L_Gpu.Foreground = Brushes.Red;
+                    L_Coin.Foreground = Brushes.Red;
+
+                    string message = "Server can't identificate your GPU.\n";
+                    message += "Probably server is shutdown. Please try again later. Try to restart miner\n";
+                    message += "Please contact to admins if ONLY you see that message. Most likely your GPU doesn't support our miner. Miner can't be started";
+                    MessageBox.Show(message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Environment.Exit(0);
+                }
+            });
+        }
+
+        private void MinerStarted()
+        {
+            Console.WriteLine("Miner is started event");
+            Dispatcher.Invoke(() =>
+            {
+                if (Miner.IsWorking)
+                {
+                    TB_Log.Clear();
+                    WTB_SteamID64.IsEnabled = false;
+                    BT_Start.Content = "Stop";
+                    BT_Start.Background = Brushes.Red;
+                }
+            });
+        }
+
+        private void MinerExited()
+        {
+            Console.WriteLine("Miner is ended event");
+            if (IsUser)
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    if (!Miner.IsWorking)
+                    {
+                        WTB_SteamID64.IsEnabled = true;
+                        BT_Start.Content = "Start";
+                        BT_Start.Background = Brushes.Green;
+                    }
+                });
+                IsUser = false;
+            }
+            else
+            {
+                Console.WriteLine("Miner is restaring");
+                string messageText = "Attention. Miner was closed incorrectly.\n";
+                messageText += "Miner will be restarted. If you want to close miner, use button for starting/stoping.\n";
+                messageText += "If miner doens't respond then:\n";
+                messageText += "First: Kill DBDSponsor process\n";
+                messageText += "Second: NECESSARILY Kill miner.exe process";
+
+                Task.Run(() =>
+                MessageBox.Show(messageText, "Attention", MessageBoxButton.OK, MessageBoxImage.Warning));
+                
+                Miner.Start(); //Restart miner
+            }
         }
 
         private void TrayClick(object sender, EventArgs e)
@@ -43,9 +137,9 @@ namespace DBDSponsor
             Show();
         }
 
-        private void NetworkErrorReceived(Exception ex)
+        private void StatErrorReceived(Exception ex)
         {
-            string output = $"Network Error: {ex.TargetSite} {ex.Message}";
+            string output = $"Stat Error: {ex.TargetSite} {ex.Message}";
             Console.WriteLine(output);
             StreamWriter log = File.AppendText(path);
             log.WriteLine(output);
@@ -65,35 +159,9 @@ namespace DBDSponsor
                     count++;
                 }
             }
-            return count > 1 ? true : false;
+            return count > 1;
         }
         
-        private async void UpdateStats()
-        {
-            await Task.Run(() =>
-            {
-                while (true)
-                {
-                    Dispatcher.Invoke(() => {
-                        string hashrate = Network.UpdatePoolHashrate();
-                        string balance = Network.UpdatePoolBalance();
-                        string voteWeight = Network.UpdateVoteWeight(WTB_SteamID64.Text);
-
-                        L_HashratePool.Content = $"Hashrate Pool: {hashrate} h/s";
-                        L_BalancePool.Content = $"Balance: {balance} (Aion)";
-                        L_VoteWeight.Content = $"Vote Weight: {voteWeight} %";
-
-                        StreamWriter log = File.AppendText(path);
-                        log.WriteLine($"Hashrate Pool: {hashrate} h/s");
-                        log.WriteLine($"Balance: {balance} (Aion)");
-                        log.WriteLine($"Vote Weight: {voteWeight} %");
-                        log.Close();
-                    });
-                    Thread.Sleep(60000);
-                }
-            });
-        }
-
         private void MinerOutputDataReceived(object sender, DataReceivedEventArgs e)
         {
             if (e.Data != null)
@@ -113,29 +181,35 @@ namespace DBDSponsor
         }
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            if (!Miner.IsStarted)
+            if (!Miner.IsWorking)
             {
-                WTB_SteamID64.IsEnabled = false;
-                BT_Start.Content = "Stop";
-                BT_Start.Background = Brushes.Red;
-                Miner.Start(WTB_SteamID64.Text, (int)Slider_Intensivity.Value);
+                Miner.Intensivity = (int)Slider_Intensivity.Value;
+                Miner.Steamid = WTB_SteamID64.Text;
+                Miner.Start();
+            }
+            else if(IsUserRestartMiner)
+            {
+                //Restarts Miner if scroll has been changed
+                IsUser = true;
+                Miner.Stop();
+                Miner.Start();
+                IsUserRestartMiner = false;
             }
             else
             {
-                WTB_SteamID64.IsEnabled = true;
-                BT_Start.Content = "Start";
-                BT_Start.Background = Brushes.Green;
+                IsUser = true;
                 Miner.Stop();
             }
         }
 
         private void Slider_Intensivity_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            if (Miner.IsStarted)
+            if (Miner.IsWorking)
             {
                 BT_Start.Content = "Apply";
                 BT_Start.Background = Brushes.Orange;
                 (sender as Slider).SelectionEnd = e.NewValue;
+                IsUserRestartMiner = true;
             }
         }
 
@@ -154,11 +228,13 @@ namespace DBDSponsor
 
         private void Window_Closed(object sender, EventArgs e)
         {
+            IsUser = true;
             Miner.Stop();
         }
 
         private void BT_Close(object sender, RoutedEventArgs e)
         {
+            IsUser = true;
             Miner.Stop();
             Environment.Exit(0);
         }

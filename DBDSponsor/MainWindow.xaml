@@ -120,12 +120,13 @@
 
         <Label Foreground="Cyan"  Content="50%" HorizontalAlignment="Left" Margin="10,147,0,0" VerticalAlignment="Top" Width="34"/>
         <Label Foreground="Cyan" Content="100%" HorizontalAlignment="Left" Margin="310,147,0,0" VerticalAlignment="Top" Width="41" RenderTransformOrigin="0.271,0.679"/>
-        <Label Foreground="Cyan" Content="v0.2" Name="L_Version" Margin="0,0,386,174"/>
+        <Label Foreground="Cyan" Content="v0.3" Name="L_Version" Margin="0,0,386,174"/>
         <Label Foreground="Cyan" Name="L_VoteWeight" HorizontalAlignment="Right" Content="Vote Weight: 99.9999%" Margin="13,107,246,66" FontSize="14" FontWeight="Bold"/>
         <Button Click="BT_Minimize" Foreground="White" BorderThickness="0" Content="-" Margin="383,0,0,0" VerticalAlignment="Top" Width="30" Height="15" HorizontalAlignment="Left"/>
         <Button Style="{StaticResource CloseBtn}" Click="BT_Close" Foreground="White" BorderThickness="0" Content="X" Margin="413,0,0,0" VerticalAlignment="Top" Width="30" Height="15" HorizontalAlignment="Left"/>
         <TextBox FontStretch="ExtraExpanded" VerticalAlignment="Center" Text="76561198426585696" x:Name="WTB_SteamID64" Margin="213,13,0,165" FontSize="15" FontWeight="Bold" HorizontalAlignment="Left" Width="156"/>
         <Label HorizontalContentAlignment="Right" Content="SteamID64:" Foreground="Cyan" x:Name="L_BalancePool_Copy" Margin="109,10,0,164" FontWeight="Bold" FontSize="14" HorizontalAlignment="Left" Width="88"/>
-              
+        <Label Foreground="Yellow"  Content="GPU: CHECk" x:Name="L_Gpu" Margin="25,0,329,172"/>
+        <Label Foreground="Yellow"  Content="Coin: CHECK" x:Name="L_Coin" Margin="25,22,329,150"/>
     </Grid>
 </Window>

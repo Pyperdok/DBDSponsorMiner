@@ -1,108 +1,25 @@
-﻿using System;
-using System.Text.Json;
-using System.Net;
-using System.IO;
-using System.Globalization;
+﻿using System.Net;
+using System.Text;
 
 namespace DBDSponsor
 {
-    class Network
+    public static class Network
     {
-        public delegate void NetworkErrorHandler(Exception ex);
-        static string poolHashrateUrl = "https://api.aionpool.tech/api/pools/AionPool/miners/0xa030ba8b2742fa1e41e10a982b91806f279dd6b90b46552144f2dfe1fe48d37e";
-        static string voteWeightUrl = "http://dbd-mix.xyz/stat";
-        static string poolBalanceUrl = "https://mainnet-api.theoan.com/aion/dashboard/getAccountDetails?accountAddress=a030ba8b2742fa1e41e10a982b91806f279dd6b90b46552144f2dfe1fe48d37e";
-        public static NetworkErrorHandler NetworkErrorReceived = null;
-        public static HttpWebResponse Http(string url)
-        {
+        public static HttpWebResponse Http(string method, string url, string body = "")
+        {            
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             request.UserAgent = "DBDSponsor";
+            request.ContentType = "application/json";
+            if(method == "POST" || method == "PUT")
+            {
+                request.Method = method;
+                byte[] data = Encoding.UTF8.GetBytes(body);
+                request.ContentLength = data.Length;
+                request.GetRequestStream().Write(data, 0, data.Length);
+            }
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
 
             return response;
-        }
-        public static string UpdatePoolBalance()
-        {
-            HttpWebResponse response = Http(poolBalanceUrl);
-            if(response.StatusCode == HttpStatusCode.OK)
-            {
-                string body = new StreamReader(response.GetResponseStream()).ReadToEnd();
-                Console.WriteLine(body);
-                JsonDocument json = JsonDocument.Parse(body);
-                JsonElement content;
-
-                if(json.RootElement.TryGetProperty("content", out content))
-                {
-                    try
-                    {
-                        string currency = content[0].GetProperty("balance").GetString();                       
-                        double balance = float.Parse(currency, NumberStyles.AllowDecimalPoint, NumberFormatInfo.InvariantInfo);
-                        balance = Math.Round(balance, 3);
-                        return balance.ToString().Replace(",", ".");
-                    }
-                    catch(Exception ex) 
-                    {
-                        NetworkErrorReceived?.Invoke(ex);
-                    }
-                }
-
-            }
-            return "00000.000";
-        }
-
-        public static string UpdateVoteWeight(string SteamID)
-        {           
-            string url = voteWeightUrl + $"?steamid={SteamID}";
-            HttpWebResponse response = Http(url);
-            if (response.StatusCode == HttpStatusCode.OK)
-            {
-                try
-                {
-                    string body = new StreamReader(response.GetResponseStream()).ReadToEnd();
-                    float voteWeight;
-                    if (float.TryParse(body, NumberStyles.Any, NumberFormatInfo.InvariantInfo, out voteWeight))
-                    {
-                        voteWeight = (float)Math.Round(voteWeight, 5);
-                        return (voteWeight * 100).ToString().Replace(",", ".");
-                    }
-                }
-                catch(Exception ex)
-                {
-                    NetworkErrorReceived?.Invoke(ex);
-                }
-            }
-            return "-";
-        }
-        public static string UpdatePoolHashrate()
-        {
-            HttpWebResponse response = Http(poolHashrateUrl);
-
-            double hashrate = 0;
-            if (response.StatusCode == HttpStatusCode.OK)
-            {
-                string body = new StreamReader(response.GetResponseStream()).ReadToEnd();
-                JsonDocument json = JsonDocument.Parse(body);
-                JsonElement perfomance;
-                if(json.RootElement.TryGetProperty("performance", out perfomance))
-                {
-                    try
-                    {
-                        JsonElement workers = perfomance.GetProperty("workers");
-                        foreach (var el in workers.EnumerateObject())
-                        {
-                            hashrate += el.Value.GetProperty("hashrate").GetSingle();
-                        }
-                    }
-                    catch(Exception ex) 
-                    {
-                        NetworkErrorReceived?.Invoke(ex);
-                    }
-                }                             
-            }
-
-            hashrate = Math.Round(hashrate, 1);
-            Console.WriteLine($"Updated Hashrate Pool: {hashrate}");
-            return hashrate.ToString().Replace(",",".");
         }
     }
 }
