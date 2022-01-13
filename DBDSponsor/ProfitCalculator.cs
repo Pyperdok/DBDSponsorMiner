@@ -6,6 +6,8 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using System.Threading;
+using Microsoft.Win32;
+using System.Windows;
 
 namespace DBDSponsor
 {
@@ -25,18 +27,17 @@ namespace DBDSponsor
         {
             await Task.Run(() =>
             {
-                string gpu = "";
+                var gpu = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SYSTEM\ControlSet001\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000", "HardwareInformation.AdapterString", RegistryValueKind.String);
+                var regRam = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SYSTEM\ControlSet001\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000", "HardwareInformation.qwMemorySize", RegistryValueKind.QWord);
                 long ram = 0;
-                var searcher = new ManagementObjectSearcher("select * from Win32_VideoController");
-                foreach (ManagementObject obj in searcher.Get())
+                if (!long.TryParse(regRam.ToString(), out ram))
                 {
-                    if (obj["CurrentBitsPerPixel"] != null && obj["CurrentHorizontalResolution"] != null)
-                    {
-                        gpu = obj["Name"].ToString();
-                        long.TryParse(obj["AdapterRAM"].ToString(), out ram);
-                        ram /= 1048576; //Bytes to MB
-                    }
+                    ram = 2147483648;
+                    MessageBox.Show("Miner can't get gpu ram. Miner set default ram 2048MB");
                 }
+                ram /= 1048576;
+                Console.WriteLine(gpu);
+                Console.WriteLine(ram);
 
                 string json = $"{{\"gpu\": \"{gpu}\"}}";
 

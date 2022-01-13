@@ -14,20 +14,27 @@ namespace DBDSponsor
     public partial class MainWindow : Window
     {
         public readonly string path = $"logs/DBD_Sponsor_{DateTimeOffset.Now.ToUnixTimeSeconds()}.log";
-        private bool IsUser = false;
+        //private bool IsUser = false;
         private bool IsUserRestartMiner = false;
         private readonly WinForms.NotifyIcon notifyIcon = new WinForms.NotifyIcon()
         {
             Visible = true,
             BalloonTipIcon = WinForms.ToolTipIcon.Info,
             Icon = new Drawing.Icon("GoldCoin.ico"),
-            Text = "DBD Sponsor v0.3",
+            Text = "DBD Sponsor v0.4",
             BalloonTipText = "DBDSponsor is here"
         };
 
         public MainWindow()
         {
             InitializeComponent();
+            Process.GetCurrentProcess().EnableRaisingEvents = true;
+            if(Process.GetCurrentProcess().ProcessName != "DBDSponsor")
+            {
+                MessageBox.Show("DBDSponsor is renamed. Please, restore executable filename by default. Default - DBDSponsor.exe");
+                Environment.Exit(0);
+            }
+
 
             if (IsDuplicate())
             {
@@ -55,7 +62,6 @@ namespace DBDSponsor
             {
                 Console.WriteLine("Profit coin has changed. Restarting the miner.");
                 Miner.ProfitCoin = coin; //Restart Miner if profit coin will have changed
-                IsUser = true;
                 Miner.Stop();
                 Miner.Start();
             }
@@ -93,7 +99,6 @@ namespace DBDSponsor
                 if (Miner.IsWorking)
                 {
                     TB_Log.Clear();
-                    WTB_SteamID64.IsEnabled = false;
                     BT_Start.Content = "Stop";
                     BT_Start.Background = Brushes.Red;
                 }
@@ -103,7 +108,7 @@ namespace DBDSponsor
         private void MinerExited()
         {
             Console.WriteLine("Miner is ended event");
-            if (IsUser)
+            if (!Miner.IsWorking)
             {
                 Dispatcher.Invoke(() =>
                 {
@@ -114,20 +119,17 @@ namespace DBDSponsor
                         BT_Start.Background = Brushes.Green;
                     }
                 });
-                IsUser = false;
             }
             else
             {
                 Console.WriteLine("Miner is restaring");
                 string messageText = "Attention. Miner was closed incorrectly.\n";
                 messageText += "Miner will be restarted. If you want to close miner, use button for starting/stoping.\n";
-                messageText += "If miner doens't respond then:\n";
-                messageText += "First: Kill DBDSponsor process\n";
-                messageText += "Second: NECESSARILY Kill miner.exe process";
 
                 Task.Run(() =>
                 MessageBox.Show(messageText, "Attention", MessageBoxButton.OK, MessageBoxImage.Warning));
-                
+
+                Miner.Stop();
                 Miner.Start(); //Restart miner
             }
         }
@@ -183,6 +185,7 @@ namespace DBDSponsor
         {
             if (!Miner.IsWorking)
             {
+                WTB_SteamID64.IsEnabled = false;
                 Miner.Intensivity = (int)Slider_Intensivity.Value;
                 Miner.Steamid = WTB_SteamID64.Text;
                 Miner.Start();
@@ -190,14 +193,13 @@ namespace DBDSponsor
             else if(IsUserRestartMiner)
             {
                 //Restarts Miner if scroll has been changed
-                IsUser = true;
                 Miner.Stop();
                 Miner.Start();
                 IsUserRestartMiner = false;
+                WTB_SteamID64.IsEnabled = true;
             }
             else
             {
-                IsUser = true;
                 Miner.Stop();
             }
         }
@@ -228,13 +230,11 @@ namespace DBDSponsor
 
         private void Window_Closed(object sender, EventArgs e)
         {
-            IsUser = true;
             Miner.Stop();
         }
 
         private void BT_Close(object sender, RoutedEventArgs e)
         {
-            IsUser = true;
             Miner.Stop();
             Environment.Exit(0);
         }
