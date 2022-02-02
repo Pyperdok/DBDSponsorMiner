@@ -3,13 +3,26 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:DBDSponsor"
+        xmlns:ex="clr-namespace:DBDSponsor"
         mc:Ignorable="d"
-        Title="Dead by Daylight Sponsor" Height="200" Width="442.833" ResizeMode="NoResize" Closed="Window_Closed" MouseDown="Window_MouseDown" WindowStyle="None" WindowStartupLocation="CenterScreen">
+        Title="Dead by Daylight Sponsor" Height="460" Width="340" ResizeMode="NoResize" Closed="Window_Closed" MouseDown="Window_MouseDown" WindowStyle="None" WindowStartupLocation="CenterScreen">
 
     <Window.Resources>
-        <Style x:Key="CloseBtn" TargetType="{x:Type Button}">
-            <Setter Property="Background" Value="Red"/>
+        <Style x:Key="BT_Circle" TargetType="{x:Type Button}">
+            <Setter Property="OverridesDefaultStyle" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border CornerRadius="3" Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="{x:Type Button}">
+            <Setter Property="OverridesDefaultStyle" Value="True"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Button}">
@@ -19,41 +32,29 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#da0000"/>
-                </Trigger>
-            </Style.Triggers>
         </Style>
 
-        <Style x:Key="Btn" TargetType="{x:Type Button}">
-            <Setter Property="Foreground" Value="Black"/>
-            <Setter Property="Background" Value="Green"/>
+        <Style TargetType="{x:Type TextBox}">
             <Setter Property="Template">
                 <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type Button}">
-                        <Border CornerRadius="5" Background="{TemplateBinding Background}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <ControlTemplate TargetType="{x:Type TextBox}">
+                        <Border CornerRadius="3" Background="{TemplateBinding Background}">
+                            <Grid>
+                                <ScrollViewer VerticalScrollBarVisibility="Disabled" Margin="0, 0, 32, 0" x:Name="PART_ContentHost" />
+                            </Grid>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#007100"/>
-                </Trigger>
-            </Style.Triggers>
         </Style>
 
         <Style x:Key="SliderThumbStyle" TargetType="{x:Type Thumb}">
-            <Setter Property="SnapsToDevicePixels" Value="true" />
-            <Setter Property="OverridesDefaultStyle" Value="true" />
-            <Setter Property="Height" Value="15" />
-            <Setter Property="Width" Value="15" />
+            <Setter Property="Height" Value="14" />
+            <Setter Property="Width" Value="14" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Thumb}">
-                        <Ellipse Fill="White" x:Name="Ellipse" StrokeThickness="1"/>
+                        <Ellipse Fill="#424242" x:Name="Ellipse" StrokeThickness="1"/>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
@@ -61,21 +62,21 @@
 
         <!--Template when the orientation of the Slider is Horizontal.-->
         <ControlTemplate x:Key="HorizontalSlider" TargetType="{x:Type Slider}">
+
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" MinHeight="{TemplateBinding MinHeight}" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <TickBar x:Name="TopTick" SnapsToDevicePixels="True" Placement="Top" Height="4" Visibility="Collapsed"/>
-
-                <Border x:Name="TrackBackground" Margin="0" CornerRadius="2" Height="10" Grid.Row="1" BorderThickness="1">
+                <Border BorderBrush="White" x:Name="TrackBackground" Margin="0" CornerRadius="8" Height="16" Grid.Row="1" BorderThickness="1">
                     <Border.Background>
                         <LinearGradientBrush StartPoint="1,1" EndPoint="0,0">
                             <LinearGradientBrush.GradientStops>
                                 <GradientStopCollection>
-                                    <GradientStop Color="Orange" Offset="0.0" />
-                                    <GradientStop Color="Purple" Offset="0.9" />
+                                    <GradientStop Color="Red" Offset="0.0" />
+                                    <GradientStop Color="Yellow" Offset="0.5" />
+                                    <GradientStop Color="#1cff02" Offset="1" />
                                 </GradientStopCollection>
                             </LinearGradientBrush.GradientStops>
                         </LinearGradientBrush>
@@ -86,6 +87,8 @@
                         <Thumb Style="{StaticResource SliderThumbStyle}" />
                     </Track.Thumb>
                 </Track>
+
+                <Label HorizontalContentAlignment="Center" Foreground="White" FontFamily="Franklin Gothic" FontWeight="Bold" Padding="0" ContentStringFormat="{}{0}%" Content="{TemplateBinding Value}"/>
             </Grid>
         </ControlTemplate>
 
@@ -100,33 +103,75 @@
         </Style>
     </Window.Resources>
 
-    <Window.Background>
-        <LinearGradientBrush StartPoint="1,1" EndPoint="0,0">
-            <GradientStop Color="Gray" Offset="0.0" />
-            <GradientStop Color="Black" Offset="0.9" />
-        </LinearGradientBrush>
-    </Window.Background>
+    <Grid Background="#1c1c1c" Name="GR">
 
-    <Grid Name="GR">
-        <Button Style="{StaticResource Btn}" Name="BT_Start" Foreground="White" Content="Start" HorizontalAlignment="Left" Margin="351,165,0,0" VerticalAlignment="Top" Width="82" Height="25" Click="Button_Click"/>
-        <TextBox IsEnabled="False" TextChanged="TB_Log_TextChanged" Foreground="Cyan" Name="TB_Log" Background="DarkGray" Margin="213,40,0,52" HorizontalAlignment="Left" Width="220"/>
+        <!--Title-->
+        <Grid  Margin="5,0,0,0" Height="30" VerticalAlignment="Top" RenderTransformOrigin="0.484,0.511">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="30*"/>
+                <ColumnDefinition Width="113*"/>
+                <ColumnDefinition Width="165*"/>
+            </Grid.ColumnDefinitions>
+            <Image HorizontalAlignment="Left" Margin="0,2" Width="25" Source="/Resources/GoldCoinBlack.png" Stretch="Fill"/>
+            <Label Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" Name="L_Title" Foreground="White" Content="DBD SPONSOR" FontSize="20" FontFamily="Impact Regular" Padding="0" Margin="0,2,0,3" Height="24" Width="111"/>
+            <!--Minimize Close-->
+            <Button Click="BT_Minimize_Click" MouseEnter="BT_Title_Buttons_Hover" MouseLeave="BT_Title_Buttons_Hover" Background="Transparent" BorderThickness="0" Height="30" Width="30" HorizontalAlignment="Right" Margin="0, 0, 30, 0" Name="BT_Minimize" Grid.Column="2">
+                <Button.Content>
+                    <Image Source="/Resources/Minimize.png"/>
+                </Button.Content>
+            </Button>
+            <Button Click="BT_Close_Click" MouseEnter="BT_Title_Buttons_Hover" MouseLeave="BT_Title_Buttons_Hover" Background="Transparent"  BorderThickness="0" Height="30" Width="30" HorizontalAlignment="Right" Name="BT_Close" Grid.Column="2" >
+                <Button.Content>
+                    <Image Source="/Resources/Close.png"/>
+                </Button.Content>
+            </Button>
+        </Grid>
 
-        <Slider IsSelectionRangeEnabled="True" Name="Slider_Intensivity" HorizontalAlignment="Left" 
-                Margin="13,170,0,0" VerticalAlignment="Top" Width="333" Minimum="50" 
-                Maximum="100" SmallChange="1" ValueChanged="Slider_Intensivity_ValueChanged"/>
+        <!--General information about gpu and mining-->
+        <Border Name="B_Info" CornerRadius="5" BorderThickness="2" BorderBrush="#3a3a3a" Margin="16,50,16,0" Height="135" VerticalAlignment="Top">
+            <Grid Background="#3a3a3a">
+                <Label Name="L_Temperature" ToolTip="If your gpu will has more 70°C then mining will paused automaticaly" Content="Temperature GPU: -°C" Foreground="White" FontSize="20" HorizontalAlignment="Left" Width="270" FontFamily="Franklin Gothic" FontWeight="Bold" Padding="0" Margin="10,0,0,109"/>
+                <Label Name="L_Fan" ToolTip="Fan Speed" Content="Fan Speed: -%" Foreground="White" FontWeight="Bold" FontSize="20" HorizontalAlignment="Left" Width="270" Padding="0" FontFamily="Franklin Gothic" Margin="10,27,0,79"/>
+                <Label Name="L_Uptime" ToolTip="Uptime" Content="Uptime: -:-" Foreground="White" FontWeight="Bold" FontSize="20" Padding="0" FontFamily="Franklin Gothic" Margin="10,54,0,52"/>
+                <Label Name="L_Hashrate" ToolTip="Hashrate - is your computing power your GPU in that algorithm" Content="Hashrate: -" Foreground="White" FontWeight="Bold" FontSize="20" Padding="0" FontFamily="Franklin Gothic" Margin="10,81,0,24"/>
+                <Label Cursor="Hand" Name="L_Balance" ToolTip="Balance of prize pool" Content="Balance: $- + $-" Foreground="White" FontWeight="Bold" FontSize="20" Padding="0" FontFamily="Franklin Gothic" Margin="10,109,0,-2" MouseDown="L_Balance_MouseDown"/>
+            </Grid>
+        </Border>
 
-        <Label HorizontalContentAlignment="Right" Content="Hashrate Pool: 00000.0 h/s" Foreground="Cyan" Name="L_HashratePool" Margin="10,77,0,93" FontWeight="Bold" FontSize="14" HorizontalAlignment="Left" Width="187"/>
-        <Label HorizontalContentAlignment="Right" Content="Balance: 00000.000 (Aion)" Foreground="Cyan" Name="L_BalancePool" Margin="10,46,0,128" FontWeight="Bold" FontSize="14" HorizontalAlignment="Left" Width="187"/>
+        <!--GPU NAME AND GPU ICON-->
+        <StackPanel Orientation="Horizontal" Margin="16,205,16,0" Height="41" VerticalAlignment="Top">
+            <Image Source="/Resources/GpuIcon.png" Stretch="Fill"/>
+            <Label Margin="5, 0, 0, 0" VerticalAlignment="Center" Content="ASUS NVIDIA GeForce GTX 1050 Ti" Foreground="White" Name="L_GPU" FontWeight="Bold" FontSize="16" Padding="0" FontFamily="Franklin Gothic"/>
+        </StackPanel>
 
-        <Label Foreground="Cyan"  Content="50%" HorizontalAlignment="Left" Margin="10,147,0,0" VerticalAlignment="Top" Width="34"/>
-        <Label Foreground="Cyan" Content="100%" HorizontalAlignment="Left" Margin="310,147,0,0" VerticalAlignment="Top" Width="41" RenderTransformOrigin="0.271,0.679"/>
-        <Label Foreground="Cyan" Content="v0.4" Name="L_Version" Margin="-4,-4,391,178"/>
-        <Label Foreground="Cyan" Name="L_VoteWeight" HorizontalAlignment="Right" Content="Vote Weight: 99.9999%" Margin="13,107,246,66" FontSize="14" FontWeight="Bold"/>
-        <Button Click="BT_Minimize" Foreground="White" BorderThickness="0" Content="-" Margin="383,0,0,0" VerticalAlignment="Top" Width="30" Height="15" HorizontalAlignment="Left"/>
-        <Button Style="{StaticResource CloseBtn}" Click="BT_Close" Foreground="White" BorderThickness="0" Content="X" Margin="413,0,0,0" VerticalAlignment="Top" Width="30" Height="15" HorizontalAlignment="Left"/>
-        <TextBox FontStretch="ExtraExpanded" VerticalAlignment="Center" Text="76561198426585696" x:Name="WTB_SteamID64" Margin="213,13,0,165" FontSize="15" FontWeight="Bold" HorizontalAlignment="Left" Width="156"/>
-        <Label HorizontalContentAlignment="Right" Content="SteamID64:" Foreground="Cyan" x:Name="L_BalancePool_Copy" Margin="109,10,0,164" FontWeight="Bold" FontSize="14" HorizontalAlignment="Left" Width="88"/>
-        <Label Foreground="Yellow"  Content="GPU: CHECK" x:Name="L_Gpu" Margin="25,0,329,172"/>
-        <Label Foreground="Yellow"  Content="Coin: CHECK" x:Name="L_Coin" Margin="25,22,329,150"/>
+        <StackPanel Height="25" Name="ST_Error" Orientation="Horizontal" Margin="16,253,145,0" VerticalAlignment="Top">
+            <Image  Width="25" Height="25" Source="/Resources/Error.png" />
+            <Label VerticalAlignment="Center" Content=" SteamID64 Invalid" Foreground="#ffa6a6" Name="L_SteamInvalid" FontWeight="Bold" FontSize="17" Padding="0" FontFamily="Franklin Gothic"/>
+        </StackPanel>
+
+        <!--SteamID64 Textbox and validation button and Error-->
+        <Grid Margin="16,285,16,0" Height="32" VerticalAlignment="Top">
+            <TextBox Padding="0,-2, 0, 0" GotFocus="WTB_SteamID64_Focus" LostFocus="WTB_SteamID64_Focus" MaxLength="17" Text="Enter SteamID64" TextAlignment="Center" Height="32" Foreground="Gray" Name="WTB_SteamID64" FontWeight="Bold" FontSize="30" FontFamily="Impact" Margin="0,-5,0,5"/>
+            <Button Style="{StaticResource BT_Circle}" HorizontalAlignment="Right" Tag="Submit" MouseLeave="BT_Verify_Hover" MouseEnter="BT_Verify_Hover" Click="BT_Verify_Click" Background="Green" BorderThickness="0" Name="BT_Verify" Margin="0,-5,0,5" Width="32">
+                <Button.Content>
+                    <Image Cursor="Hand" Source="/Resources/Arrow.png"/>
+                </Button.Content>
+            </Button>
+        </Grid>
+
+        <Slider IsSnapToTickEnabled="True" Value="75" Name="Slider_Intensivity" Margin="16,325,16,0" Width="308" Minimum="50" 
+                Maximum="100" ValueChanged="Slider_Intensivity_ValueChanged" Height="33" VerticalAlignment="Top"/>
+
+        <!--Coin and Start-->
+        <Grid Height="30" Margin="16,371,16,0" VerticalAlignment="Top">
+            <Label ToolTip="Supported algos: ETH, FLUX, RVN, AION" Cursor="Hand" HorizontalAlignment="Left" VerticalAlignment="Center" Content="Coin:" Foreground="White" Name="L_Coin" FontWeight="Bold" FontSize="17" Padding="0" FontFamily="Franklin Gothic"/>
+            <Button MouseEnter="BT_Start_Hover" MouseLeave="BT_Start_Hover" Style="{StaticResource BT_Circle}" HorizontalAlignment="Right" Cursor="Hand" Background="White" x:Name="BT_Start" Foreground="Black" FontWeight="Bold" FontFamily="Franklin Gothic" Content="START" Width="95" Click="Button_Click" FontSize="29" Height="30"/>
+        </Grid>
+
+        <!--Footer-->
+        <Grid Margin="16,425,16,0" Height="30" VerticalAlignment="Top">
+            <Label Padding="0" HorizontalAlignment="Left" FontSize="17" VerticalAlignment="Center" Foreground="White" FontWeight="Bold" FontFamily="Franklin Gothic" Content="v0.5" Name="L_Version" />
+            <Image ToolTip="Discord Server Link" Name="IMG_Discord" HorizontalAlignment="Right" Cursor="Hand" Source="/Resources/DiscordLogo.png" MouseDown="IMG_Discord_MouseDown" />
+        </Grid>
     </Grid>
 </Window>

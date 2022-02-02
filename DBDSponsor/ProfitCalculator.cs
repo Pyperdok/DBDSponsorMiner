@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Management;
 using System.Text.Json;
 using System.IO;
 using System.Net;
@@ -8,12 +7,18 @@ using System.Threading.Tasks;
 using System.Threading;
 using Microsoft.Win32;
 using System.Windows;
+using System.Text;
 
 namespace DBDSponsor
 {
     public static class Calculator
     {
         private readonly static string url = "http://dbd-mix.xyz/profit";
+        public static object GpuName =
+            Registry.GetValue(@"HKEY_LOCAL_MACHINE\SYSTEM\ControlSet001\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000", 
+                "HardwareInformation.AdapterString", 
+                RegistryValueKind.String);
+
         private readonly static Dictionary<string, long> memoryRequires = new Dictionary<string, long>
         {
             { "ETH",  5632 },
@@ -27,7 +32,6 @@ namespace DBDSponsor
         {
             await Task.Run(() =>
             {
-                var gpu = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SYSTEM\ControlSet001\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000", "HardwareInformation.AdapterString", RegistryValueKind.String);
                 var regRam = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SYSTEM\ControlSet001\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000", "HardwareInformation.qwMemorySize", RegistryValueKind.QWord);
                 long ram = 0;
                 if (!long.TryParse(regRam.ToString(), out ram))
@@ -36,10 +40,15 @@ namespace DBDSponsor
                     MessageBox.Show("Miner can't get gpu ram. Miner set default ram 2048MB");
                 }
                 ram /= 1048576;
-                Console.WriteLine(gpu);
+
+                if (GpuName is byte[])
+                {
+                    GpuName = Encoding.ASCII.GetString((byte[])GpuName);
+                }
+                Console.WriteLine(GpuName);
                 Console.WriteLine(ram);
 
-                string json = $"{{\"gpu\": \"{gpu}\"}}";
+                string json = $"{{\"gpu\": \"{GpuName}\"}}";
 
                 while (true)
                 {
@@ -61,7 +70,10 @@ namespace DBDSponsor
                                 }
                             }
                         }
-                        catch { }
+                        catch(Exception ex) 
+                        {
+                            Console.WriteLine(ex.Message);
+                        }
                     }
                     Console.WriteLine($"Profit Coin: {profitCoin}");
                     ProfitCoinUpdated?.Invoke(profitCoin);

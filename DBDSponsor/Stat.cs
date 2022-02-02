@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Text.Json;
@@ -10,114 +9,88 @@ namespace DBDSponsor
 {
     public class Stat
     {
-        private readonly static string poolHashrateUrl = "https://api.aionpool.tech/api/pools/AionPool/miners/0xa030ba8b2742fa1e41e10a982b91806f279dd6b90b46552144f2dfe1fe48d37e";
-        private readonly static string voteWeightUrl = "http://dbd-mix.xyz/stat";
-        private readonly static string poolBalanceUrl = "https://mainnet-api.theoan.com/aion/dashboard/getAccountDetails?accountAddress=a030ba8b2742fa1e41e10a982b91806f279dd6b90b46552144f2dfe1fe48d37e";
-        
         public delegate void NetworkErrorHandler(Exception ex);
         public static event NetworkErrorHandler ErrorReceived = null;
-        public static MainWindow Window;
-        private static string UpdatePoolBalance()
+        public static Action<bool> Updated;
+        
+        public static int Temperature { get; private set; }
+        public static int Fan { get; private set; }
+        public static int Uptime { get; private set; }
+        public static string Hashrate { get; private set; }
+        public static string Balance { get; private set; } = "$0.00 + $0.00";
+
+        private static void UpdateStats()
         {
-            HttpWebResponse response = Network.Http("GET", poolBalanceUrl);
-            if (response.StatusCode == HttpStatusCode.OK)
+           HttpWebResponse response = Network.Http("GET", "http://127.0.0.1:10050/stat");
+
+           using(StreamReader reader = new StreamReader(response.GetResponseStream()))
+           {
+                JsonDocument json = JsonDocument.Parse(reader.ReadToEnd());
+
+                json.RootElement.TryGetProperty("devices", out JsonElement devices);
+                devices[0].TryGetProperty("temperature", out JsonElement temperature);
+                devices[0].TryGetProperty("fan", out JsonElement fan);
+                devices[0].TryGetProperty("speed", out JsonElement speed);
+
+                json.RootElement.TryGetProperty("uptime", out JsonElement uptime);
+                json.RootElement.TryGetProperty("speed_unit", out JsonElement speed_unit);
+
+                Temperature = temperature.GetInt32();
+                Fan = fan.GetInt32();
+                Uptime = uptime.GetInt32();
+                Hashrate = $"{speed.GetSingle()} {speed_unit.GetString()}";
+            }
+        }
+
+        private static void UpdateBalance()
+        {
+            HttpWebResponse response = Network.Http("GET", $"http://dbd-mix.xyz/api");
+            using (StreamReader reader = new StreamReader(response.GetResponseStream()))
             {
-                string body = new StreamReader(response.GetResponseStream()).ReadToEnd();
-                Console.WriteLine(body);
-                JsonDocument json = JsonDocument.Parse(body);
-                if (json.RootElement.TryGetProperty("content", out JsonElement content))
+                JsonDocument json = JsonDocument.Parse(reader.ReadToEnd());
+
+                json.RootElement.TryGetProperty("address", out JsonElement address);
+                json.RootElement.TryGetProperty("binance", out JsonElement binance);
+                string add = Math.Round(address.GetSingle(), 2).ToString().Replace(",", ".");
+                string bin = Math.Round(binance.GetSingle(), 2).ToString().Replace(",", ".");
+                Balance = $"${add} + ${bin}";
+            }
+        }
+        public static async void UpdateBalanceAsync()
+        {
+            await Task.Run(() =>
+            {
+                while (true)
                 {
                     try
                     {
-                        string currency = content[0].GetProperty("balance").GetString();
-                        double balance = float.Parse(currency, NumberStyles.AllowDecimalPoint, NumberFormatInfo.InvariantInfo);
-                        balance = Math.Round(balance, 3);
-                        return balance.ToString().Replace(",", ".");
+                        UpdateBalance();
                     }
-                    catch (Exception ex)
+                    catch
                     {
-                        ErrorReceived?.Invoke(ex);
+                        Balance = $"$x + $x";
                     }
+                    Thread.Sleep(5000);
                 }
-
-            }
-            return "00000.000";
+            });
         }
 
-        private static string UpdateVoteWeight(string SteamID)
-        {
-            string url = voteWeightUrl + $"?steamid={SteamID}";
-            HttpWebResponse response = Network.Http("GET", url);
-            if (response.StatusCode == HttpStatusCode.OK)
-            {
-                try
-                {
-                    string body = new StreamReader(response.GetResponseStream()).ReadToEnd();
-                    if (float.TryParse(body, NumberStyles.Any, NumberFormatInfo.InvariantInfo, out float voteWeight))
-                    {
-                        voteWeight = (float)Math.Round(voteWeight, 5);
-                        return (voteWeight * 100).ToString().Replace(",", ".");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    ErrorReceived?.Invoke(ex);
-                }
-            }
-            return "-";
-        }
-        private static string UpdatePoolHashrate()
-        {
-            HttpWebResponse response = Network.Http("GET", poolHashrateUrl);
-
-            double hashrate = 0;
-            if (response.StatusCode == HttpStatusCode.OK)
-            {
-                string body = new StreamReader(response.GetResponseStream()).ReadToEnd();
-                JsonDocument json = JsonDocument.Parse(body);
-                if (json.RootElement.TryGetProperty("performance", out JsonElement perfomance))
-                {
-                    try
-                    {
-                        JsonElement workers = perfomance.GetProperty("workers");
-                        foreach (var el in workers.EnumerateObject())
-                        {
-                            hashrate += el.Value.GetProperty("hashrate").GetSingle();
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        ErrorReceived?.Invoke(ex);
-                    }
-                }
-            }
-
-            hashrate = Math.Round(hashrate, 1);
-            Console.WriteLine($"Updated Hashrate Pool: {hashrate}");
-            return hashrate.ToString().Replace(",", ".");
-        }
         public static async void UpdateStatsAsync()
         {
             await Task.Run(() =>
             {
                 while (true)
                 {
-                    Window.Dispatcher.Invoke(() => {
-                        string hashrate = UpdatePoolHashrate();
-                        string balance = UpdatePoolBalance();
-                        string voteWeight = UpdateVoteWeight(Window.WTB_SteamID64.Text);
-
-                        Window.L_HashratePool.Content = $"Hashrate Pool: {hashrate} h/s";
-                        Window.L_BalancePool.Content = $"Balance: {balance} (Aion)";
-                        Window.L_VoteWeight.Content = $"Vote Weight: {voteWeight} %";
-
-                        StreamWriter log = File.AppendText(Window.path);
-                        log.WriteLine($"Hashrate Pool: {hashrate} h/s");
-                        log.WriteLine($"Balance: {balance} (Aion)");
-                        log.WriteLine($"Vote Weight: {voteWeight} %");
-                        log.Close();
-                    });
-                    Thread.Sleep(60000);
+                    try
+                    {
+                        UpdateStats();
+                        Updated?.Invoke(true);
+                    }
+                    catch 
+                    {
+                        Updated?.Invoke(false);
+                    }
+                    Thread.Sleep(1000);
                 }
             });
         }

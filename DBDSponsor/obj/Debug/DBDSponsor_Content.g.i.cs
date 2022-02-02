@@ -8,6 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("goldcoin.ico")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("resources/close.png")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("resources/minimize.png")]
 
 
