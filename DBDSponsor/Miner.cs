@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -9,7 +10,7 @@ namespace DBDSponsor
     public class Miner
     {
         public delegate string CoinParameter();
-
+        private static Logger log = LogManager.GetCurrentClassLogger();
         private readonly static ProcessStartInfo startInfo = new ProcessStartInfo
         {
             FileName = "miner",
@@ -42,20 +43,27 @@ namespace DBDSponsor
 
         public static void Start()
         {
+            log.Info("Miner is starting");
             startInfo.Arguments = coinParams[ProfitCoin].Invoke();
-            Console.WriteLine(startInfo.Arguments);
-            Console.WriteLine(Steamid);
+            log.Info(startInfo.Arguments + $"SteamID64 {Steamid}");
 
             internalMiner = Process.Start(startInfo);
             IsWorking = true;
+            log.Info("Miner is started");
 
+            log.Debug("Miner is started. Waiting of valid handle");
             while (internalMiner.MainWindowHandle == IntPtr.Zero) ;
             ShowWindowAsync(internalMiner.MainWindowHandle, 0);
 
+            log.Debug("Handle is valid. Console window is hidden");
+
+            log.Debug("Injection AutoExit.dll");
             if (!internalMiner.InjectDLL("AutoExit.dll"))
             {
+                string message = "Injection Failed. Stopping the miner";
+                log.Fatal(message);
                 Stop();
-                MessageBox.Show("Injection Error");
+                MessageBox.Show(message);
                 return;
             }
 
@@ -63,32 +71,36 @@ namespace DBDSponsor
             internalMiner.OutputDataReceived += OutputDataReceived;
             internalMiner.Exited += MinerExited;
             internalMiner.BeginOutputReadLine();
+            log.Debug("Output is redirected to this process");
 
             Started?.Invoke();
-            Console.WriteLine($"Miner is started PID: {internalMiner.Id}");
+            log.Info($"Miner is started PID: {internalMiner.Id}");
         }
 
         public static void Restart()
         {
+            log.Info("Miner is restaring");
             internalMiner.Exited -= MinerExited;
             Stop();
             Start();
+            log.Info("Miner is restarted");
         }
 
         public static void Stop()
         {
             if (IsWorking)
             {
+                log.Info($"Miner is stopping");
                 internalMiner.CloseMainWindow();
                 internalMiner = null;
                 IsWorking = false;
-                Console.WriteLine("Miner is stopped");
+                log.Info("Miner was stopped");
             }
         }
 
         private static void MinerExited(object sender, EventArgs e)
         {
-            Console.WriteLine("Miner is stopped");
+            log.Debug("Miner is exited internal event");
             Exited?.Invoke();
         }
     }

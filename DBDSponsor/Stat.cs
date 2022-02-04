@@ -4,13 +4,13 @@ using System.Net;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 
 namespace DBDSponsor
 {
     public class Stat
     {
-        public delegate void NetworkErrorHandler(Exception ex);
-        public static event NetworkErrorHandler ErrorReceived = null;
+        private static Logger log = LogManager.GetCurrentClassLogger();   
         public static Action<bool> Updated;
         
         public static int Temperature { get; private set; }
@@ -38,7 +38,7 @@ namespace DBDSponsor
                 Temperature = temperature.GetInt32();
                 Fan = fan.GetInt32();
                 Uptime = uptime.GetInt32();
-                Hashrate = $"{speed.GetSingle()} {speed_unit.GetString()}";
+                Hashrate = $"{speed.GetUInt64()} {speed_unit.GetString()}";
             }
         }
 
@@ -66,8 +66,9 @@ namespace DBDSponsor
                     {
                         UpdateBalance();
                     }
-                    catch
+                    catch(Exception ex)
                     {
+                        log.Error(ex.ToString());
                         Balance = $"$x + $x";
                     }
                     Thread.Sleep(5000);
@@ -86,8 +87,9 @@ namespace DBDSponsor
                         UpdateStats();
                         Updated?.Invoke(true);
                     }
-                    catch 
+                    catch(Exception ex) 
                     {
+                        log.Error(ex.ToString());
                         Updated?.Invoke(false);
                     }
                     Thread.Sleep(1000);

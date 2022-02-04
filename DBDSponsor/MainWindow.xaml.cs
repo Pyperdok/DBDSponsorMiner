@@ -12,6 +12,7 @@ using System.Windows.Media.Imaging;
 using System.Net;
 using System.Text.Json;
 using System.Collections.Generic;
+using NLog;
 
 namespace DBDSponsor
 {
@@ -27,7 +28,7 @@ namespace DBDSponsor
             Visible = true,
             BalloonTipIcon = WinForms.ToolTipIcon.Info,
             Icon = Properties.Resources.GoldCoin,
-            Text = "DBD Sponsor v0.5",
+            Text = "DBD Sponsor v0.6",
             BalloonTipText = "DBDSponsor is here"
         };
 
@@ -50,22 +51,30 @@ namespace DBDSponsor
             {Brushes.DarkRed,  Brushes.Transparent},
             { Brushes.Transparent,  Brushes.DarkRed},
         };
+        private Logger log = LogManager.GetCurrentClassLogger();
 
         public MainWindow()
         {
             InitializeComponent();
+            NLog.Config.SimpleConfigurator.ConfigureForTargetLogging(new MyMailTarget(), LogLevel.Fatal);
+            log.Debug("Initialization");
+           
             ST_Error.Visibility = Visibility.Hidden;
             BT_Start.IsEnabled = false;
             
             var providerName = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SYSTEM\ControlSet001\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000", "ProviderName", RegistryValueKind.String);
             if (providerName.ToString().ToLower().IndexOf("advanced") != -1)
             {
-                MessageBox.Show("Is your GPU by AMD? For AMD gpu PLEASE set COMPUTING MODE of your GPU. If you won't do that then your gpu effcienty has been extremely reduced.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+                string message = "Is your GPU by AMD? For AMD gpu PLEASE set COMPUTING MODE of your GPU. If you won't do that then your gpu effcienty has been extremely reduced.";
+                log.Warn(message);
+                MessageBox.Show(message, "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
 
             if (IsDuplicate())
             {
-                MessageBox.Show("DBDSponsor is already started. Please don't try to start the duplicate");
+                string message = "DBDSponsor is already started. Please don't try to start the duplicate";
+                log.Fatal(message);
+                MessageBox.Show(message);
                 Environment.Exit(0);
             }
             Directory.CreateDirectory("logs");
@@ -78,21 +87,30 @@ namespace DBDSponsor
                     WTB_SteamID64.Text = steamid;
                     BT_Verify_Click(BT_Verify, null);
                 }
-            }         
+            }
 
             //Events
+            log.Debug("Registration Events");
             Miner.OutputDataReceived += MinerOutputDataReceived;
             Miner.Started += MinerStarted;
             Miner.Exited += MinerExited;
             Calculator.ProfitCoinUpdated += ProfitCoinUpdated;
-            Stat.ErrorReceived += StatErrorReceived;
+            //Stat.ErrorReceived += StatErrorReceived;
             Stat.Updated += StatsUpdated;
             notifyIcon.Click += TrayClick;
+            log.Debug("Registration Events completed");
 
+            log.Debug("Update Stats Async starting");
             Stat.UpdateStatsAsync();
+
+            log.Debug("Update Balance Async starting");
             Stat.UpdateBalanceAsync();
+
+            log.Debug("Update Profit Coin starting");
             L_GPU.Content = Calculator.GpuName;
             Calculator.UpdateProfitCoinAsync();
+
+            log.Debug("Initialization Completed");
         }
 
         private void StatsUpdated(bool good)
@@ -118,6 +136,22 @@ namespace DBDSponsor
                 };
             }
             Dispatcher.Invoke(updateCallback);
+
+            LogMessageGenerator message = () =>
+            {
+                string msg = "Miner stats is updated\n";
+                msg += "========================================\n";
+                msg += $"Temperature GPU: {Stat.Temperature}°C\n";
+                msg += $"Fan Speed: {Stat.Fan}%\n";
+                msg += $"Uptime: {Stat.Uptime / 60}:{Stat.Uptime % 60}\n";
+                msg += $"Hashrate: {Stat.Hashrate}\n";
+                msg += $"Balance: {Stat.Balance}\n";
+                msg += "========================================";
+
+                return msg;
+            };
+
+            log.Info(message);
         }
 
         private void ProfitCoinUpdated(string coin)
@@ -128,28 +162,26 @@ namespace DBDSponsor
                 string message = "Server can't identificate your GPU.\n";
                 message += "Probably server is shutdown. Please try again later. Try to restart miner\n";
                 message += "Please contact to admins if ONLY you see that message. Most likely your GPU doesn't support our miner. Miner can't be started";
-                
-                StreamWriter log = File.AppendText(path);
-                log.WriteLine(message);
-                log.Close();
 
+                log.Fatal(message);               
                 MessageBox.Show(message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 Environment.Exit(0);
             }
 
             if (Miner.ProfitCoin != coin && Miner.IsWorking)
             {
-                Console.WriteLine("Profit coin has changed. Restarting the miner.");
+                log.Info("Profit coin has changed. Restarting the miner");
                 Miner.ProfitCoin = coin; //Restart Miner if profit coin will have changed
                 Miner.Restart();
             }
 
             Dispatcher.Invoke(() => L_Coin.Content = $"Coin: {coin}");
+            log.Info("Profit coin is updated");
         }
 
         private void MinerStarted()
         {
-            Console.WriteLine("Miner is started event");
+            log.Info("Miner is started event");
             Dispatcher.Invoke(() =>
             {
                 if (Miner.IsWorking)
@@ -158,13 +190,17 @@ namespace DBDSponsor
                     BT_Verify.IsEnabled = false;
                 }
             });
+
             using (StreamWriter writer = new StreamWriter("steamid.cfg", false))
+            {
                 writer.WriteLine(Miner.Steamid);
+                log.Info("Steamid.cfg is updated");
+            }
         }
 
         private void MinerExited()
         {
-            Console.WriteLine("Miner is ended event");
+            log.Info("Miner is ended event");
             if (!Miner.IsWorking)
             {
                 Dispatcher.Invoke(() => {
@@ -174,10 +210,10 @@ namespace DBDSponsor
             }
             else if(!IsUserRestartMiner)
             {
-                Console.WriteLine("Miner is restaring");
+                log.Info("Miner is restaring");
                 string messageText = "Attention. Miner was closed incorrectly.\n";
                 messageText += "Miner will be restarted. If you want to close miner, use button for starting/stoping.\n";
-
+                log.Warn(messageText);
                 Task.Run(() =>
                 MessageBox.Show(messageText, "Attention", MessageBoxButton.OK, MessageBoxImage.Warning));
 
@@ -188,19 +224,12 @@ namespace DBDSponsor
         private void TrayClick(object sender, EventArgs e)
         {
             Show();
-        }
-
-        private void StatErrorReceived(Exception ex)
-        {
-            string output = $"Stat Error: {ex.TargetSite} {ex.Message}";
-            Console.WriteLine(output);
-            StreamWriter log = File.AppendText(path);
-            log.WriteLine(output);
-            log.Close();
+            log.Debug("DBDSponsor is expand");
         }
 
         private bool IsDuplicate()
         {
+            log.Debug("DBDSponsor Duplicate check");
             Process[] processes = Process.GetProcesses();
             string myProcName = Process.GetCurrentProcess().ProcessName;
             int count = 0;
@@ -219,28 +248,22 @@ namespace DBDSponsor
         {
             if (e.Data != null)
             {
-                Dispatcher.Invoke(() =>
-                {
-                    //if (TB_Log.Text.Length > 1048576)
-                    //{
-                    //    TB_Log.Clear();
-                    //}
-                    StreamWriter log = File.AppendText(path);
-                    log.WriteLineAsync(e.Data);
-                    log.Close();
-                    //TB_Log.AppendText("\n" + e.Data);
-                });
+                log.Info(e.Data);
             }
         }
         private void Button_Click(object sender, RoutedEventArgs e)
-        {          
+        {
+            log.Debug("Start/Stop is pressed");
             if (!Miner.IsWorking && Miner.ProfitCoin != null)
             {
+                log.Debug("Button Start Miner");
+                Miner.Intensivity = (int)Slider_Intensivity.Value;
                 WTB_SteamID64.IsEnabled = false;
                 Miner.Start();
             }
             else if (IsUserRestartMiner && Miner.ProfitCoin != null)
             {
+                log.Debug("Button Restart Miner");
                 //Restarts Miner if scroll has been changed
                 Miner.Intensivity = (int)Slider_Intensivity.Value;
                 Miner.Restart();
@@ -248,6 +271,7 @@ namespace DBDSponsor
             }
             else
             {
+                log.Debug("Button Stop Miner");
                 Miner.Stop();
             }
         }
@@ -256,6 +280,7 @@ namespace DBDSponsor
         {
             if (Miner.IsWorking)
             {
+                log.Info("Scroll is changed. Button name is APPLY");
                 BT_Start.Content = "APPLY";
                 (sender as Slider).SelectionEnd = e.NewValue;
                 IsUserRestartMiner = true;
@@ -266,34 +291,34 @@ namespace DBDSponsor
         {
             if (e.LeftButton == MouseButtonState.Pressed)
             {
+                log.Debug("DragMove Form");
                 DragMove();
             }
         }
 
-        private void TB_Log_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            (sender as TextBox).ScrollToEnd();
-        }
-
         private void Window_Closed(object sender, EventArgs e)
         {
+            log.Debug("Window is closed event");
             Miner.Stop();
         }
 
         private void BT_Close_Click(object sender, RoutedEventArgs e)
         {
+            log.Debug("Button close. DBDSponsor is closing");
             Miner.Stop();
             Environment.Exit(0);
         }
         private void BT_Minimize_Click(object sender, RoutedEventArgs e)
         {
+            log.Debug("DBDSponsor is minimized");
             notifyIcon.ShowBalloonTip(5000);
             Hide();
         }
 
         private void BT_Title_Buttons_Hover(object sender, MouseEventArgs e)
         {
-            if(sender.Equals(BT_Minimize))
+            log.Debug("Title button hover event");
+            if (sender.Equals(BT_Minimize))
             {
                 BT_Minimize.Background = MinimizeColorPair[BT_Minimize.Background];
             }
@@ -303,8 +328,9 @@ namespace DBDSponsor
             }
         }
 
-        private static void ValidateSteamID64(string steamid, out string nickname)
+        private void ValidateSteamID64(string steamid, out string nickname)
         {
+            log.Info("Validating steamid64");
             HttpWebResponse response = Network.Http("GET", $"http://dbd-mix.xyz/steam?steamid={steamid}");
             nickname = null;
             if (response.StatusCode == HttpStatusCode.OK)
@@ -342,6 +368,7 @@ namespace DBDSponsor
 
         private void BT_Verify_Click(object sender, RoutedEventArgs e)
         {
+            log.Debug("Button verify is clicked");
             string icon = "/Resources/Arrow.png";
             Brush color = Brushes.DarkGreen;
             Action verifyCallback = BT_Verify_Edit;
@@ -359,16 +386,18 @@ namespace DBDSponsor
                 BT_Verify.Background = color;
                 ST_Error.Visibility = Visibility.Hidden;
                 IsSubmit = !IsSubmit;
+                log.Info($"Steamid64 is valid");
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                log.Error(ex.ToString());
                 ST_Error.Visibility = Visibility.Visible;
             }
         }
 
         private void WTB_SteamID64_Focus(object sender, RoutedEventArgs e)
         {
+            log.Debug("WTB_SteamID64 is focused");
             TextBox textBox = (sender as TextBox);
             if (string.IsNullOrWhiteSpace(textBox.Text))
             {
@@ -389,7 +418,8 @@ namespace DBDSponsor
 
         private void BT_Start_Hover(object sender, MouseEventArgs e)
         {
-            if(BT_Start.Background == Brushes.White)
+            log.Debug("Button start hover event");
+            if (BT_Start.Background == Brushes.White)
             {
                 BT_Start.Background = Brushes.LightGray;
             }

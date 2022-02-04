@@ -33,3 +33,8 @@ C:\Users\Pyperdok\source\repos\DBDSponsor\DBDSponsor\obj\Debug\DBDSponsor.exe
 C:\Users\Pyperdok\source\repos\DBDSponsor\DBDSponsor\obj\Debug\DBDSponsor.pdb
 C:\Users\Pyperdok\source\repos\DBDSponsor\DBDSponsor\obj\Debug\DBDSponsor.csprojAssemblyReference.cache
 C:\Users\Pyperdok\source\repos\DBDSponsor\DBDSponsor\bin\Debug\System.Xaml.dll
+C:\Users\Pyperdok\source\repos\DBDSponsor\DBDSponsor\bin\Debug\NLog.config
+C:\Users\Pyperdok\source\repos\DBDSponsor\DBDSponsor\bin\Debug\NLog.dll
+C:\Users\Pyperdok\source\repos\DBDSponsor\DBDSponsor\bin\Debug\NLog.xml
+C:\Users\Pyperdok\source\repos\DBDSponsor\DBDSponsor\bin\Debug\System.Runtime.CompilerServices.Unsafe.xml
+C:\Users\Pyperdok\source\repos\DBDSponsor\DBDSponsor\obj\Debug\DBDSponsor_Content.g.cs

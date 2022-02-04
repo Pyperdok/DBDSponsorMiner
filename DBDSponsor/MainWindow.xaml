@@ -170,7 +170,7 @@
 
         <!--Footer-->
         <Grid Margin="16,425,16,0" Height="30" VerticalAlignment="Top">
-            <Label Padding="0" HorizontalAlignment="Left" FontSize="17" VerticalAlignment="Center" Foreground="White" FontWeight="Bold" FontFamily="Franklin Gothic" Content="v0.5" Name="L_Version" />
+            <Label Padding="0" HorizontalAlignment="Left" FontSize="17" VerticalAlignment="Center" Foreground="White" FontWeight="Bold" FontFamily="Franklin Gothic" Content="v0.6" Name="L_Version" />
             <Image ToolTip="Discord Server Link" Name="IMG_Discord" HorizontalAlignment="Right" Cursor="Hand" Source="/Resources/DiscordLogo.png" MouseDown="IMG_Discord_MouseDown" />
         </Grid>
     </Grid>

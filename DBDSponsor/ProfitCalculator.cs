@@ -8,11 +8,13 @@ using System.Threading;
 using Microsoft.Win32;
 using System.Windows;
 using System.Text;
+using NLog;
 
 namespace DBDSponsor
 {
     public static class Calculator
     {
+        private static Logger log = LogManager.GetCurrentClassLogger();
         private readonly static string url = "http://dbd-mix.xyz/profit";
         public static object GpuName =
             Registry.GetValue(@"HKEY_LOCAL_MACHINE\SYSTEM\ControlSet001\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000", 
@@ -45,8 +47,8 @@ namespace DBDSponsor
                 {
                     GpuName = Encoding.ASCII.GetString((byte[])GpuName);
                 }
-                Console.WriteLine(GpuName);
-                Console.WriteLine(ram);
+
+                log.Info($"GPU: {GpuName} | RAM: {ram}");
 
                 string json = $"{{\"gpu\": \"{GpuName}\"}}";
 
@@ -58,6 +60,7 @@ namespace DBDSponsor
                     {
                         try
                         {
+                            log.Debug($"Attempt to get profit coin");
                             string body = new StreamReader(response.GetResponseStream()).ReadToEnd();
                             JsonDocument coins = JsonDocument.Parse(body);
 
@@ -72,15 +75,14 @@ namespace DBDSponsor
                         }
                         catch(Exception ex) 
                         {
-                            Console.WriteLine(ex.Message);
+                            log.Error(ex.ToString());
                         }
                     }
-                    Console.WriteLine($"Profit Coin: {profitCoin}");
+                    log.Info($"Profit Coin: {profitCoin}");
                     ProfitCoinUpdated?.Invoke(profitCoin);
                     Thread.Sleep(3600000); //1 hour
                 }
             });
-            //return profitCoin;
         }
     }
 }

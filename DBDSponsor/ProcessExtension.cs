@@ -3,11 +3,15 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using NLog;
+using NLog.Config;
+using NLog.Targets;
 
 namespace DBDSponsor
 {
     public static class ProcessExtension
     {
+        private static Logger log = LogManager.GetCurrentClassLogger();
         [DllImport("kernel32.dll")]
         public static extern IntPtr CreateRemoteThread(IntPtr hProcess,
            IntPtr lpThreadAttributes, uint dwStackSize, IntPtr
@@ -47,65 +51,70 @@ namespace DBDSponsor
 
         public static bool InjectDLL(this Process process, string dllPath)
         {
-            if (!File.Exists(dllPath)) return false;
-            byte[] dllName = Encoding.ASCII.GetBytes(dllPath);
+            log.Debug("Injection process is preparing");
+            if (!File.Exists(dllPath))
+            {
+                log.Fatal("AutoExit.dll is not existed");
+                return false;
+            }
 
+            log.Debug("OpenProcess handle");
+            byte[] dllName = Encoding.ASCII.GetBytes(dllPath);
             IntPtr hProcess = OpenProcess(0x1F0FFF, true, process.Id);
             if (hProcess == IntPtr.Zero)
             {
-                Console.WriteLine("Handle Error");
+                log.Fatal("OpenProcess Error. Handle is invalid");
                 CloseHandle(hProcess);
                 return false;
             }
 
+            log.Debug("OpenProcess is success. Try to allocate memory in miner process");
             IntPtr allocMem = VirtualAllocEx(hProcess, IntPtr.Zero, dllName.Length, 0x1000, 0x40);
             if (allocMem == IntPtr.Zero)
             {
-                Console.WriteLine("Alloc Error");
+                log.Fatal("Error of memory allocation");
                 CloseHandle(hProcess);
                 return false;
             }
 
+            log.Debug("Allocation is success. Try to write AutoExit.dll in memory");
             WriteProcessMemory(hProcess, allocMem, dllName, dllName.Length, out _);
             IntPtr kernel = GetModuleHandle("kernel32.dll");
 
             if (kernel == IntPtr.Zero)
             {
-                Console.WriteLine("Kernel Error");
+                log.Fatal("GetModuleHandle Kernel32 Error");
                 CloseHandle(hProcess);
                 return false;
             }
-            IntPtr injector = GetProcAddress(kernel, "LoadLibraryA");
 
+            log.Debug("Getting address of LoadLibraryA");
+            IntPtr injector = GetProcAddress(kernel, "LoadLibraryA");
             if (injector == IntPtr.Zero)
             {
-                Console.WriteLine("Inject Error");
+                log.Fatal("GetProcAddress LoadLibraryA Injection Error");
                 CloseHandle(hProcess);
                 return false;
             }
 
+            log.Debug("Creating Remote Thread");
             IntPtr result = CreateRemoteThread(hProcess, IntPtr.Zero, 0, injector, allocMem, 0, IntPtr.Zero);
-
             if (result == IntPtr.Zero)
             {
-                Console.WriteLine("CreateRemoteThread Error");
+                log.Fatal("Remote Thread Creating Error");
                 CloseHandle(hProcess);
                 return false;
             }
 
             CloseHandle(hProcess);
-            Console.WriteLine("Dll was injected");
+            log.Debug("Dll was injected");
             return true;
         }
 
         public static IntPtr CreateHandle(this Process process)
         {
+            log.Debug("Creating a handle of process");
             return OpenProcess(0x1F0FFF, true, process.Id);
-        }
-        public static void Close(this IntPtr handle)
-        {
-            CloseHandle(handle);
-            handle = IntPtr.Zero;
         }
     }
 }
